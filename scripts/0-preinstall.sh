@@ -75,10 +75,10 @@ createsubvolumes () {
 }
 
 mountallsubvol () {
-    mount -o ${MOUNT_OPTIONS},subvol=@home /dev/mapper/ROOT /mnt/home
-    mount -o ${MOUNT_OPTIONS},subvol=@tmp /dev/mapper/ROOT /mnt/tmp
-    mount -o ${MOUNT_OPTIONS},subvol=@var /dev/mapper/ROOT /mnt/var
-    mount -o ${MOUNT_OPTIONS},subvol=@.snapshots /dev/mapper/ROOT /mnt/.snapshots
+    mount -o ${MOUNT_OPTIONS},subvol=@home ${cryptroot} /mnt/home
+    mount -o ${MOUNT_OPTIONS},subvol=@tmp ${cryptroot} /mnt/tmp
+    mount -o ${MOUNT_OPTIONS},subvol=@var ${cryptroot} /mnt/var
+    mount -o ${MOUNT_OPTIONS},subvol=@.snapshots ${cryptroot} /mnt/.snapshots
 }
 
 subvolumesetup () {
@@ -87,7 +87,7 @@ subvolumesetup () {
 # unmount root to remount with subvolume 
     umount /mnt
 # mount @ subvolume
-    mount -o ${MOUNT_OPTIONS},subvol=@ /dev/mapper/ROOT /mnt
+    mount -o ${MOUNT_OPTIONS},subvol=@ ${cryptroot} /mnt
 # make directories home, .snapshots, var, tmp
     mkdir -p /mnt/{home,var,tmp,.snapshots}
 # mount subvolumes
@@ -102,19 +102,22 @@ else
     partition3=${DISK}3
 fi
 
+# Define the root cryptdevice
+cryptdev=/dev/mapper/cryptroot
+
 # Create the EFIBOOT partition
 mkfs.vfat -F32 -n "EFIBOOT" ${partition2}
 # enter luks password to cryptsetup and format root partition
 echo -n "${LUKS_PASSWORD}" | cryptsetup -y --cipher aes-xts-plain64 --key-size 512 --hash sha512 --iter-time 5000 --use-random luksFormat ${partition3} -
 # open luks container and ROOT will be place holder 
-echo -n "${LUKS_PASSWORD}" | cryptsetup open ${partition3} ROOT -
+echo -n "${LUKS_PASSWORD}" | cryptsetup open ${partition3} cryptroot -
 # now format that container
-mkfs.btrfs -L ROOT /dev/mapper/ROOT
+mkfs.btrfs -L ROOT ${cryptroot}
 # create subvolumes for btrfs
-mount -t btrfs /dev/mapper/ROOT /mnt
+mount -t btrfs ${cryptroot} /mnt
 subvolumesetup
 # store uuid of encrypted partition for grub
-echo ENCRYPTED_PARTITION_UUID=$(blkid -s UUID -o value /dev/mapper/ROOT) >> $CONFIGS_DIR/setup.conf
+echo ENCRYPTED_PARTITION_UUID=$(blkid -s UUID -o value ${cryptroot}) >> $CONFIGS_DIR/setup.conf
 
 # mount target
 mkdir -p /mnt/boot/efi
