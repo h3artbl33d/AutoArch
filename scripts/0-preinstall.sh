@@ -83,7 +83,7 @@ mountallsubvol () {
 
 subvolumesetup () {
 # create nonroot subvolumes
-    createsubvolumes     
+    createsubvolumes
 # unmount root to remount with subvolume 
     umount /mnt
 # mount @ subvolume
@@ -109,12 +109,12 @@ echo -n "${LUKS_PASSWORD}" | cryptsetup -y --cipher aes-xts-plain64 --key-size 5
 # open luks container and ROOT will be place holder 
 echo -n "${LUKS_PASSWORD}" | cryptsetup open ${partition3} ROOT -
 # now format that container
-mkfs.btrfs -L ROOT ${partition3}
+mkfs.btrfs -L ROOT /dev/mapper/ROOT
 # create subvolumes for btrfs
-mount -t btrfs ${partition3} /mnt
+mount -t btrfs /dev/mapper/ROOT /mnt
 subvolumesetup
 # store uuid of encrypted partition for grub
-echo ENCRYPTED_PARTITION_UUID=$(blkid -s UUID -o value ${partition3}) >> $CONFIGS_DIR/setup.conf
+echo ENCRYPTED_PARTITION_UUID=$(blkid -s UUID -o value /dev/mapper/ROOT) >> $CONFIGS_DIR/setup.conf
 
 # mount target
 mkdir -p /mnt/boot/efi
