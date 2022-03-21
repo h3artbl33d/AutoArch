@@ -51,7 +51,7 @@ select_option() {
                             if [[ $key = [B || $key = j ]]; then echo down;  fi;
                             if [[ $key = [C || $key = l ]]; then echo right;  fi;
                             if [[ $key = [D || $key = h ]]; then echo left;  fi;
-                        fi 
+                        fi
     }
     print_options_multicol() {
         # print options by overwriting the last lines
@@ -62,9 +62,9 @@ select_option() {
         local idx=0
         local row=0
         local col=0
-        
+
         curr_idx=$(( $curr_col + $curr_row * $colmax ))
-        
+ 
         for option in "${options[@]}"; do
 
             row=$(( $idx/$colmax ))
@@ -104,7 +104,7 @@ select_option() {
     local active_row=0
     local active_col=0
     while true; do
-        print_options_multicol $active_col $active_row 
+        print_options_multicol $active_col $active_row
         # user key control
         case `key_input` in
             enter)  break;;
@@ -130,30 +130,23 @@ logo () {
 # This will be shown on every set as user is progressing
 echo -ne "
 -------------------------------------------------------------------------
- █████╗ ██████╗  ██████╗██╗  ██╗████████╗██╗████████╗██╗   ██╗███████╗
-██╔══██╗██╔══██╗██╔════╝██║  ██║╚══██╔══╝██║╚══██╔══╝██║   ██║██╔════╝
-███████║██████╔╝██║     ███████║   ██║   ██║   ██║   ██║   ██║███████╗
-██╔══██║██╔══██╗██║     ██╔══██║   ██║   ██║   ██║   ██║   ██║╚════██║
-██║  ██║██║  ██║╚██████╗██║  ██║   ██║   ██║   ██║   ╚██████╔╝███████║
-╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝   ╚═╝   ╚═╝   ╚═╝    ╚═════╝ ╚══════╝
+ ▄▄▄       █    ██ ▄▄▄█████▓ ▒█████   ▄▄▄       ██▀███   ▄████▄   ██░ ██
+▒████▄     ██  ▓██▒▓  ██▒ ▓▒▒██▒  ██▒▒████▄    ▓██ ▒ ██▒▒██▀ ▀█  ▓██░ ██▒
+▒██  ▀█▄  ▓██  ▒██░▒ ▓██░ ▒░▒██░  ██▒▒██  ▀█▄  ▓██ ░▄█ ▒▒▓█    ▄ ▒██▀▀██░
+░██▄▄▄▄██ ▓▓█  ░██░░ ▓██▓ ░ ▒██   ██░░██▄▄▄▄██ ▒██▀▀█▄  ▒▓▓▄ ▄██▒░▓█ ░██
+ ▓█   ▓██▒▒▒█████▓   ▒██▒ ░ ░ ████▓▒░ ▓█   ▓██▒░██▓ ▒██▒▒ ▓███▀ ░░▓█▒░██▓
+ ▒▒   ▓▒█░░▒▓▒ ▒ ▒   ▒ ░░   ░ ▒░▒░▒░  ▒▒   ▓▒█░░ ▒▓ ░▒▓░░ ░▒ ▒  ░ ▒ ░░▒░▒
+  ▒   ▒▒ ░░░▒░ ░ ░     ░      ░ ▒ ▒░   ▒   ▒▒ ░  ░▒ ░ ▒░  ░  ▒    ▒ ░▒░ ░
+  ░   ▒    ░░░ ░ ░   ░      ░ ░ ░ ▒    ░   ▒     ░░   ░ ░         ░  ░░ ░
+      ░  ░   ░                  ░ ░        ░  ░   ░     ░ ░       ░  ░  ░
+                                                        ░
 ------------------------------------------------------------------------
-            Please select presetup settings for your system              
+            Please select presetup settings for your system
 ------------------------------------------------------------------------
 "
 }
 filesystem () {
-# This function will handle file systems. At this movement we are handling only
-# btrfs and ext4. Others will be added in future.
-echo -ne "
-Please Select your file system for both boot and root
-"
-options=("btrfs" "ext4" "luks" "exit")
-select_option $? 1 "${options[@]}"
 
-case $? in
-0) set_option FS btrfs;;
-1) set_option FS ext4;;
-2) 
 while true; do
   echo -ne "Please enter your luks password: \n"
   read -s luks_password # read password without echo
@@ -169,10 +162,6 @@ while true; do
     echo -e "\nPasswords do not match. Please try again. \n"
   fi
 done
-;;
-3) exit ;;
-*) echo "Wrong option please select again"; filesystem;;
-esac
 }
 timezone () {
 # Added this from arch wiki https://wiki.archlinux.org/title/System_time
@@ -180,7 +169,7 @@ time_zone="$(curl --fail https://ipapi.co/timezone)"
 echo -ne "
 System detected your timezone to be '$time_zone' \n"
 echo -ne "Is this correct?
-" 
+"
 options=("Yes" "No")
 select_option $? 1 "${options[@]}"
 

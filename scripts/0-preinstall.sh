@@ -102,29 +102,19 @@ else
     partition3=${DISK}3
 fi
 
-if [[ "${FS}" == "btrfs" ]]; then
-    mkfs.vfat -F32 -n "EFIBOOT" ${partition2}
-    mkfs.btrfs -L ROOT ${partition3} -f
-    mount -t btrfs ${partition3} /mnt
-    subvolumesetup
-elif [[ "${FS}" == "ext4" ]]; then
-    mkfs.vfat -F32 -n "EFIBOOT" ${partition2}
-    mkfs.ext4 -L ROOT ${partition3}
-    mount -t ext4 ${partition3} /mnt
-elif [[ "${FS}" == "luks" ]]; then
-    mkfs.vfat -F32 -n "EFIBOOT" ${partition2}
+# Create the EFIBOOT partition
+mkfs.vfat -F32 -n "EFIBOOT" ${partition2}
 # enter luks password to cryptsetup and format root partition
-    echo -n "${LUKS_PASSWORD}" | cryptsetup -y -v luksFormat ${partition3} -
+echo -n "${LUKS_PASSWORD}" | cryptsetup -y --cipher aes-xts-plain64 --key-size 512 --hash sha512 --iter-time 5000 --use-random luksFormat luksFormat ${partition3} -
 # open luks container and ROOT will be place holder 
-    echo -n "${LUKS_PASSWORD}" | cryptsetup open ${partition3} ROOT -
+echo -n "${LUKS_PASSWORD}" | cryptsetup open ${partition3} ROOT -
 # now format that container
-    mkfs.btrfs -L ROOT ${partition3}
+mkfs.btrfs -L ROOT ${partition3}
 # create subvolumes for btrfs
-    mount -t btrfs ${partition3} /mnt
-    subvolumesetup
+mount -t btrfs ${partition3} /mnt
+subvolumesetup
 # store uuid of encrypted partition for grub
-    echo ENCRYPTED_PARTITION_UUID=$(blkid -s UUID -o value ${partition3}) >> $CONFIGS_DIR/setup.conf
-fi
+echo ENCRYPTED_PARTITION_UUID=$(blkid -s UUID -o value ${partition3}) >> $CONFIGS_DIR/setup.conf
 
 # mount target
 mkdir -p /mnt/boot/efi
